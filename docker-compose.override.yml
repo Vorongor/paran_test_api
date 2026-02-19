@@ -1,0 +1,8 @@
+services:
+  tester:
+    build: .
+    environment:
+      - ENVIRONMENT=test
+    command: python -m pytest -s src/tests/test_api.py
+    volumes:
+      - .:/app
