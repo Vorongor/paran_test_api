@@ -1,3 +1,3 @@
-from src.database.models.user import UserModel
+from src.database.models.user import UserModel, RefreshTokenModel
 
-__all__ = ["UserModel"]
+__all__ = ["UserModel", "RefreshTokenModel"]

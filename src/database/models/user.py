@@ -1,10 +1,14 @@
-from datetime import datetime, date
+from datetime import datetime, date, timezone, timedelta
+from typing import List
 
-from sqlalchemy import Integer, String, DateTime, func, Date
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Integer, String, DateTime, func, Date, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.config import get_settings
 from src.database import Base
 from src.security import hash_password, verify_password
+
+settings = get_settings()
 
 
 class UserModel(Base):
@@ -30,6 +34,12 @@ class UserModel(Base):
         nullable=False,
     )
 
+    refresh_tokens: Mapped[List["RefreshTokenModel"]] = relationship(
+        "RefreshTokenModel",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
     def __repr__(self) -> str:
         return (
             f"<UserModel(id={self.id}, email={self.email}, "
@@ -38,7 +48,8 @@ class UserModel(Base):
 
     @classmethod
     def create(
-            cls, email: str,
+            cls,
+            email: str,
             raw_password: str,
             name: str,
             surname: str,
@@ -73,3 +84,41 @@ class UserModel(Base):
 
     def check_password(self, password: str) -> bool:
         return verify_password(password, self._hashed_password)
+
+
+class RefreshTokenModel(Base):
+    __tablename__ = "refresh_tokens"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    token: Mapped[str] = mapped_column(String(255), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc) + timedelta(days=1),
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+
+    user: Mapped[UserModel] = relationship(
+        "UserModel", back_populates="refresh_tokens"
+    )
+
+    @classmethod
+    def create(
+            cls, user_id: int | Mapped[int], token: str
+    ) -> "RefreshTokenModel":
+        """
+        Factory method to create a new RefreshTokenModel instance.
+        """
+        expires_at = datetime.now(timezone.utc) + timedelta(
+            days=settings.REFRESH_TOKEN_DAYS
+        )
+        return cls(user_id=user_id, expires_at=expires_at, token=token)
+
+    def __repr__(self) -> str:
+        return (
+            f"<RefreshTokenModel(id={self.id}, "
+            f"token={self.token}, expires_at={self.expires_at})>"
+        )
