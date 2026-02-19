@@ -21,6 +21,10 @@ class BaseAppSettings(BaseSettings):
     REFRESH_TOKEN_DAYS: int = 7
     ACCESS_KEY_TIMEDELTA_MINUTES: int = 60
 
+    SECRET_KEY_ACCESS: str = "placeholder_access"
+    SECRET_KEY_REFRESH: str = "placeholder_refresh"
+    JWT_SIGNING_ALGORITHM: str = "HS256"
+
     @property
     def DATABASE_URL(self) -> str:
         return f"sqlite+aiosqlite:///{self.BASE_DIR}/project_db.db"
