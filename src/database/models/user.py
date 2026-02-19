@@ -48,12 +48,12 @@ class UserModel(Base):
 
     @classmethod
     def create(
-            cls,
-            email: str,
-            raw_password: str,
-            name: str,
-            surname: str,
-            date_of_birth: date,
+        cls,
+        email: str,
+        raw_password: str,
+        name: str,
+        surname: str,
+        date_of_birth: date,
     ) -> "UserModel":
         """
         Factory method to create a new UserModel instance.
@@ -107,7 +107,7 @@ class RefreshTokenModel(Base):
 
     @classmethod
     def create(
-            cls, user_id: int | Mapped[int], token: str
+        cls, user_id: int | Mapped[int], token: str
     ) -> "RefreshTokenModel":
         """
         Factory method to create a new RefreshTokenModel instance.

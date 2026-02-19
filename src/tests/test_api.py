@@ -6,7 +6,6 @@ from src.database import Base
 from src.database.engine import engine
 from src.main import app
 
-
 settings = get_settings()
 
 
@@ -26,7 +25,7 @@ async def test_register_and_login_flow():
             "surname": "Tester",
             "email": "test_user_unique@example.com",
             "date_of_birth": "1995-01-01",
-            "password": "strongPassword!123"
+            "password": "strongPassword!123",
         }
 
         response = await ac.post("/api/v1/register", json=user_data)
@@ -34,7 +33,7 @@ async def test_register_and_login_flow():
 
         login_data = {
             "email": "test_user_unique@example.com",
-            "password": "strongPassword!123"
+            "password": "strongPassword!123",
         }
         login_response = await ac.post("/api/v1/login", json=login_data)
 

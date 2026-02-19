@@ -12,7 +12,7 @@ from src.database.models import UserModel
 from src.exceptions import (
     TokenExpiredError,
     InvalidTokenError,
-    UserNotFoundException
+    UserNotFoundException,
 )
 from src.schemas import UserReadSchema
 from src.security import JWTAuthManagerInterface
@@ -22,11 +22,9 @@ security_scheme = HTTPBearer()
 
 
 async def get_current_user(
-        db: Annotated[AsyncSession, Depends(get_db)],
-        auth: Annotated[
-            HTTPAuthorizationCredentials, Depends(security_scheme)],
-        jwt_manager: Annotated[
-            JWTAuthManagerInterface, Depends(get_jwt_manager)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    auth: Annotated[HTTPAuthorizationCredentials, Depends(security_scheme)],
+    jwt_manager: Annotated[JWTAuthManagerInterface, Depends(get_jwt_manager)],
 ) -> UserReadSchema:
     token = auth.credentials
     try:

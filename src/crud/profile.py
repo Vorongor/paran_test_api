@@ -1,24 +1,26 @@
-from typing import Annotated
-
-from fastapi import Depends
+from fastapi import Response
 
 from src.schemas import UserReadSchema
-from src.security.utils import get_current_user
 from src.services import generate_user_pdf
 
 
-async def retrieve_user(
-        auth_user: Annotated[UserReadSchema, Depends(get_current_user)]
-) -> UserReadSchema:
-    pdf_file = generate_user_pdf(auth_user)
+async def prepare_profile_pdf_response(user: UserReadSchema) -> Response:
+    """
+    Core logic to generate a PDF file from user data and wrap it in a Response.
 
-    # 2. Повертаємо файл як відповідь
-    headers = {
-        'Content-Disposition': f'attachment; filename="profile_{auth_user.id}.pdf"'
-    }
+    Args:
+        user (UserReadSchema): The authenticated user data.
+
+    Returns:
+        Response: FastAPI response object with PDF binary content and headers.
+    """
+    pdf_buffer = generate_user_pdf(user)
+
+    filename = f"profile_{user.id}.pdf"
+    headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
 
     return Response(
-        content=pdf_file.getvalue(),
+        content=pdf_buffer.getvalue(),
         media_type="application/pdf",
-        headers=headers
+        headers=headers,
     )

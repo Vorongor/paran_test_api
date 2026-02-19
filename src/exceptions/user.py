@@ -13,5 +13,6 @@ class UserCreateException(UserBaseException):
 class UserAlreadyExistsException(UserBaseException):
     pass
 
+
 class UserNotFoundException(UserBaseException):
     pass

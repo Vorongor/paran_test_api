@@ -1,5 +1,3 @@
-import os
-from typing import Optional
 from pathlib import Path
 
 from pydantic import computed_field, Field
@@ -21,8 +19,12 @@ class BaseAppSettings(BaseSettings):
     REFRESH_TOKEN_DAYS: int = 7
     ACCESS_KEY_TIMEDELTA_MINUTES: int = 60
 
-    SECRET_KEY_ACCESS: str = "placeholder_access"
-    SECRET_KEY_REFRESH: str = "placeholder_refresh"
+    SECRET_KEY_ACCESS: str = Field(
+        "placeholder_access", alias="SECRET_KEY_ACCESS"
+    )
+    SECRET_KEY_REFRESH: str = Field(
+        "placeholder_refresh", alias="SECRET_KEY_REFRESH"
+    )
     JWT_SIGNING_ALGORITHM: str = "HS256"
 
     @property
@@ -31,23 +33,11 @@ class BaseAppSettings(BaseSettings):
 
 
 class Settings(BaseAppSettings):
-    POSTGRES_USER: Optional[str] = os.getenv("POSTGRES_USER")
-    POSTGRES_PASSWORD: Optional[str] = os.getenv("POSTGRES_PASSWORD")
-    POSTGRES_HOST: Optional[str] = os.getenv("POSTGRES_HOST")
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_HOST: str
     POSTGRES_DB_PORT: int = 5432
-    POSTGRES_DB: Optional[str] = os.getenv("POSTGRES_DB")
-
-    SECRET_KEY_ACCESS: str = Field(
-        default_factory=lambda: os.getenv(
-            "SECRET_KEY_ACCESS", os.urandom(32).hex()
-        )
-    )
-    SECRET_KEY_REFRESH: str = Field(
-        default_factory=lambda: os.getenv(
-            "SECRET_KEY_REFRESH", os.urandom(32).hex()
-        )
-    )
-    JWT_SIGNING_ALGORITHM: str = "HS256"
+    POSTGRES_DB: str
 
     @computed_field
     @property
@@ -64,26 +54,15 @@ class LocalSettings(BaseAppSettings):
 
     ENVIRONMENT: str = "local"
 
-    @property
-    def DATABASE_URL(self) -> str:
-        return "sqlite+aiosqlite:///project_db.db"
-
 
 class TestingSettings(BaseAppSettings):
     """TEST_SETTINGS: SQLite in-memory"""
 
     ENVIRONMENT: str = "test"
-
     SECRET_KEY_ACCESS: str = "test_secret"
     SECRET_KEY_REFRESH: str = "test_secret"
-    JWT_SIGNING_ALGORITHM: str = "HS256"
 
     @computed_field
     @property
     def DATABASE_URL(self) -> str:
         return "sqlite+aiosqlite:///:memory:"
-
-    @computed_field
-    @property
-    def PATH_TO_MOVIES_CSV(self) -> str:
-        return str(self.BASE_DIR / "database" / "seed_data" / "test_data.csv")

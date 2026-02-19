@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends
@@ -7,55 +8,42 @@ from src.config import (
     Settings,
     BaseAppSettings,
     TestingSettings,
-    LocalSettings
+    LocalSettings,
 )
 from src.security import JWTAuthManager
 
 
+@lru_cache
 def get_settings() -> BaseAppSettings:
     """
     Retrieve the application settings based on the current environment.
-
-    This function reads the 'ENVIRONMENT' environment variable
-    (defaulting to 'developing' if not set)
-    and returns a corresponding settings instance.
-    If the environment is 'testing', it returns an instance
-    of TestingSettings; otherwise, it returns an instance of Settings.
-
-    Returns:
-        BaseAppSettings:
-        The settings instance appropriate for the current environment.
     """
 
-    environment = os.environ.get("ENVIRONMENT", "local")
-    if environment == "docker":
-        return Settings()
-    elif environment == "test":
-        return TestingSettings()
-    return LocalSettings()
+    env = os.getenv("ENVIRONMENT", "local").lower()
+
+    configs = {
+        "docker": Settings,
+        "test": TestingSettings,
+        "local": LocalSettings,
+    }
+
+    config_class = configs.get(env, LocalSettings)
+    return config_class()
 
 
+@lru_cache
 def get_jwt_manager(
-        settings: Annotated[BaseAppSettings, Depends(get_settings)],
+    settings: Annotated[BaseAppSettings, Depends(get_settings)],
 ) -> JWTAuthManager:
     """
-        Create and return a JWT authentication manager instance.
-
-        This function uses the provided application settings to instantiate a
-        JWTAuthManager, which implements the JWTAuthManagerInterface.
-        The manager is configured with secret keys for access and refresh
-        tokens as well as the JWT signing algorithm specified in the settings.
-
-        Args:
-            settings (BaseAppSettings, optional): The application
-            settings instance Defaults to the output of get_settings().
-
-        Returns:
-            JWTAuthManagerInterface: An instance of JWTAuthManager configured
-            with the appropriate secret keys and algorithm.
-        """
+    Create and return a JWT authentication manager instance.
+    """
     return JWTAuthManager(
         secret_key_access=settings.SECRET_KEY_ACCESS,
         secret_key_refresh=settings.SECRET_KEY_REFRESH,
         algorithm=settings.JWT_SIGNING_ALGORITHM,
     )
+
+
+SettingsDep = Annotated[BaseAppSettings, Depends(get_settings)]
+JWTManagerDep = Annotated[JWTAuthManager, Depends(get_jwt_manager)]

@@ -2,12 +2,13 @@ from src.exceptions.user import (
     UserBaseException,
     UserCreateException,
     UserAlreadyExistsException,
-    UserNotFoundException
+    UserNotFoundException,
 )
 from src.exceptions.security import (
     TokenExpiredError,
     InvalidTokenError,
     PasswordChangeError,
+    BaseSecurityException,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "TokenExpiredError",
     "InvalidTokenError",
     "PasswordChangeError",
+    "BaseSecurityException",
 ]

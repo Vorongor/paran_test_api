@@ -2,9 +2,14 @@ from src.config.settings import (
     BaseAppSettings,
     Settings,
     LocalSettings,
-    TestingSettings
+    TestingSettings,
 )
-from src.config.dependency import get_settings, get_jwt_manager
+from src.config.dependency import (
+    get_settings,
+    get_jwt_manager,
+    SettingsDep,
+    JWTManagerDep,
+)
 
 __all__ = [
     #  Settings models
@@ -14,5 +19,7 @@ __all__ = [
     "TestingSettings",
     #  dependency
     "get_settings",
-    "get_jwt_manager"
+    "get_jwt_manager",
+    "SettingsDep",
+    "JWTManagerDep",
 ]

@@ -2,12 +2,12 @@ from src.schemas.user import (
     UserCreateSchema,
     UserReadSchema,
     LoginRequestSchema,
-    LoginResponseSchema
+    LoginResponseSchema,
 )
 
 __all__ = [
     "UserCreateSchema",
     "UserReadSchema",
     "LoginRequestSchema",
-    "LoginResponseSchema"
+    "LoginResponseSchema",
 ]

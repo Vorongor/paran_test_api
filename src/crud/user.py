@@ -13,26 +13,53 @@ from src.exceptions import (
     UserCreateException,
     UserNotFoundException,
     UserAlreadyExistsException,
-    PasswordChangeError
+    UserBaseException,
 )
 from src.schemas import (
     UserCreateSchema,
     UserReadSchema,
     LoginRequestSchema,
-    LoginResponseSchema
+    LoginResponseSchema,
 )
 from src.security import JWTAuthManagerInterface
 
 
 async def _get_user_by_email(email: str, db: AsyncSession) -> UserModel:
+    """
+    Internal helper to fetch a user from the database by their email address.
+
+    Args:
+        email (str): The unique email address to search for.
+        db (AsyncSession): The database session.
+
+    Returns:
+        Optional[UserModel]: The user instance if found, otherwise None.
+    """
     user = await db.execute(select(UserModel).where(UserModel.email == email))
     return user.scalar_one_or_none()
 
 
 async def create_new_user(
-        user_data: UserCreateSchema,
-        db: Annotated[AsyncSession, Depends(get_db)]
+    user_data: UserCreateSchema, db: Annotated[AsyncSession, Depends(get_db)]
 ) -> UserReadSchema:
+    """
+    Registers a new user in the system.
+
+    Performs a check for email uniqueness, hashes the password,
+    and persists the user record.
+
+    Args:
+        user_data (UserCreateSchema): Data for the new user.
+        db (DBDep): Async database session.
+
+    Raises:
+        UserAlreadyExistsException: If the email is already registered.
+        UserCreateException: If a database error occurs during commitment.
+
+    Returns:
+        UserReadSchema: The newly created user's public information.
+    """
+
     existing_user = await _get_user_by_email(user_data.email, db)
     if existing_user:
         raise UserAlreadyExistsException(
@@ -54,30 +81,39 @@ async def create_new_user(
     except SQLAlchemyError as err:
         await db.rollback()
         raise UserCreateException(
-            message=str(err),
+            message=f"Database error during registration: {str(err)}",
         )
     return UserReadSchema.model_validate(user)
 
 
 async def login_user(
-        login_data: LoginRequestSchema,
-        db: Annotated[AsyncSession, Depends(get_db)],
-        jwt_manager: Annotated[
-            JWTAuthManagerInterface, Depends(get_jwt_manager)
-        ],
-        settings: Annotated[BaseAppSettings, Depends(get_settings)],
-
+    login_data: LoginRequestSchema,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    jwt_manager: Annotated[JWTAuthManagerInterface, Depends(get_jwt_manager)],
+    settings: Annotated[BaseAppSettings, Depends(get_settings)],
 ) -> LoginResponseSchema:
-    user = await _get_user_by_email(login_data.email, db)
-    if not user:
-        raise UserNotFoundException(
-            message="Incorrect email or password"
-        )
+    """
+    Authenticates a user and generates access/refresh tokens.
 
-    if not user.check_password(login_data.password):
-        raise PasswordChangeError(
-            message="Incorrect email or password"
-        )
+    Verifies credentials, issues JWT tokens, and stores the
+    refresh token in the database for session persistence.
+
+    Args:
+        login_data (LoginRequestSchema): Login credentials (email/password).
+        db (DBDep): Async database session.
+        jwt_manager (JWTManagerDep): Service for token generation.
+        settings (SettingsDep): Application configuration.
+
+    Raises:
+        UserNotFoundException: If credentials do not match any user.
+        AuthException: If a database error occurs while saving refresh tokens.
+
+    Returns:
+        LoginResponseSchema: A set of JWT tokens and token type.
+    """
+    user = await _get_user_by_email(login_data.email, db)
+    if not user or not user.check_password(login_data.password):
+        raise UserNotFoundException(message="Incorrect email or password")
     token_data = {
         "user_id": user.id,
         "email": user.email,
@@ -90,7 +126,6 @@ async def login_user(
         data=token_data,
         expires_delta=timedelta(days=settings.REFRESH_TOKEN_DAYS),
     )
-
     db_token = RefreshTokenModel.create(
         token=refresh_token,
         user_id=user.id,
@@ -105,4 +140,6 @@ async def login_user(
         )
     except SQLAlchemyError:
         await db.rollback()
-        raise
+        raise UserBaseException(
+            message="Could not establish secure session. Please try again."
+        )
