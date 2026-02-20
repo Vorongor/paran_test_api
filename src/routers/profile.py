@@ -1,5 +1,6 @@
 from typing import Annotated
 
+import httpx
 from fastapi import APIRouter, Depends, status, HTTPException, Response
 
 from src.crud import prepare_profile_pdf_response
@@ -27,7 +28,7 @@ profile_router = APIRouter(tags=["Profile"])
     },
 )
 async def get_profile(
-    auth_user: Annotated[UserReadSchema, Depends(get_current_user)],
+        auth_user: Annotated[UserReadSchema, Depends(get_current_user)],
 ) -> Response:
     """
     Endpoint to retrieve the current user's profile in PDF format.
@@ -35,20 +36,31 @@ async def get_profile(
     - **Authentication**: Required via Bearer Token
     - **Returns**: Binary PDF stream
     """
-    try:
-        return await prepare_profile_pdf_response(auth_user)
 
-    except (TokenExpiredError, InvalidTokenError) as err:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=getattr(err, "message", "Authentication failed"),
-        )
-    except UserNotFoundException as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=err.message
-        )
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while generating the PDF report.",
-        )
+    pdf_service_url = "http://pdf_service:8001/generate"
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                pdf_service_url,
+                json=auth_user.model_dump(mode="json")
+            )
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="PDF service error"
+                )
+
+            return Response(
+                content=response.content,
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition":
+                        f'attachment; filename="profile_{auth_user.id}.pdf"'
+                }
+            )
+        except httpx.RequestError:
+            raise HTTPException(
+                status_code=503,
+                detail="PDF service unavailable"
+            )
