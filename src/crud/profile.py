@@ -4,7 +4,7 @@ from src.schemas import UserReadSchema
 from src.services import generate_user_pdf
 
 
-async def prepare_profile_pdf_response(user: UserReadSchema) -> Response:
+def prepare_profile_pdf_response(user: UserReadSchema) -> Response:
     """
     Core logic to generate a PDF file from user data and wrap it in a Response.
 
