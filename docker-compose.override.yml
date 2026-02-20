@@ -1,6 +1,8 @@
 services:
   tester:
     build: .
+    profiles:
+      - test
     environment:
       - ENVIRONMENT=test
     command: python -m pytest -s src/tests/test_api.py

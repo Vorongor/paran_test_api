@@ -1,5 +1,4 @@
 import os
-from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends
@@ -13,7 +12,6 @@ from src.config import (
 from src.security import JWTAuthManager
 
 
-@lru_cache
 def get_settings() -> BaseAppSettings:
     """
     Retrieve the application settings based on the current environment.
@@ -31,7 +29,6 @@ def get_settings() -> BaseAppSettings:
     return config_class()
 
 
-@lru_cache
 def get_jwt_manager(
     settings: Annotated[BaseAppSettings, Depends(get_settings)],
 ) -> JWTAuthManager:
