@@ -54,7 +54,7 @@ dedicated PDF generation service, adhering to a clean, layered architecture.
 │   ├── validators/              # App validators
 │   └── main.py                  # App entry point
 ├── Dockerfile                   # App image instruction
-├── docker-compose.yml           # Main runner
+├── compose.yml                  # Main runner
 ├── docker-compose.override.yml  # Pytest suite
 ├── pyproject.toml               # App configuration
 ├── .env.sample                  # App envinroment variables

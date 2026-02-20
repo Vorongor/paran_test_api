@@ -21,8 +21,6 @@ if settings.ENVIRONMENT == "docker":
 
 engine = create_async_engine(settings.DATABASE_URL, **connect_args)
 
-print(f"ENVIRONMENT IS: {settings.ENVIRONMENT}")
-print(f"Connecting to {settings.DATABASE_URL}")
 
 AsyncSessionLocal = async_sessionmaker(
     autoflush=False,
@@ -45,7 +43,6 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as db:
         try:
             yield db
-            await db.commit()
         except SQLAlchemyError:
             await db.rollback()
             raise

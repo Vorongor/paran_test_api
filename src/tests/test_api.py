@@ -29,7 +29,7 @@ async def test_register_and_login_flow():
         }
 
         response = await ac.post("/api/v1/register", json=user_data)
-        assert response.status_code in [200, 201]
+        assert response.status_code == 201
 
         login_data = {
             "email": "test_user_unique@example.com",
