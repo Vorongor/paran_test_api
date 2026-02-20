@@ -3,8 +3,14 @@ from typing import Annotated
 from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.config import JWTManagerDep, SettingsDep
-from src.crud import create_new_user, login_user
+from src.config import (
+    JWTManagerDep,
+    SettingsDep,
+    BaseAppSettings,
+    get_settings,
+    get_jwt_manager
+)
+from src.crud import create_new_user, login_user, logout_user, refresh_token
 from src.database import get_db
 from src.exceptions import UserBaseException, BaseSecurityException
 from src.schemas import (
@@ -12,13 +18,18 @@ from src.schemas import (
     UserCreateSchema,
     LoginResponseSchema,
     LoginRequestSchema,
+    RefreshTokenResponseSchema,
+    RefreshTokenSchema,
+    CommonResponseSchema,
 )
+from src.security import JWTAuthManagerInterface
+from src.security.utils import get_current_user
 
 user_router = APIRouter(tags=["Authentication"])
 
 
 @user_router.post(
-    "/register",
+    "/users",
     status_code=status.HTTP_201_CREATED,
     response_model=UserReadSchema,
     summary="Register a new user",
@@ -28,7 +39,8 @@ user_router = APIRouter(tags=["Authentication"])
     },
 )
 async def register(
-    user_data: UserCreateSchema, db: Annotated[AsyncSession, Depends(get_db)]
+        user_data: UserCreateSchema,
+        db: Annotated[AsyncSession, Depends(get_db)]
 ) -> UserReadSchema:
     """
     Register a new user in the system.
@@ -50,7 +62,7 @@ async def register(
 
 
 @user_router.post(
-    "/login",
+    "/sessions",
     status_code=status.HTTP_200_OK,
     response_model=LoginResponseSchema,
     summary="Authenticate user and get tokens",
@@ -60,10 +72,10 @@ async def register(
     },
 )
 async def login(
-    login_data: LoginRequestSchema,
-    db: Annotated[AsyncSession, Depends(get_db)],
-    jwt_manager: JWTManagerDep,
-    settings: SettingsDep,
+        login_data: LoginRequestSchema,
+        db: Annotated[AsyncSession, Depends(get_db)],
+        jwt_manager: JWTManagerDep,
+        settings: SettingsDep,
 ) -> LoginResponseSchema:
     """
     Authenticate a user and return JWT tokens.
@@ -84,4 +96,63 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect email or password",
+        )
+
+
+@user_router.post(
+    "/logout",
+    status_code=status.HTTP_200_OK,
+    response_model=CommonResponseSchema,
+    summary="Logout user",
+    description="Invalidates user sessions by deleting "
+                "all refresh tokens from the database.",
+)
+async def logout(
+        db: Annotated[AsyncSession, Depends(get_db)],
+        auth_user: Annotated[UserReadSchema, Depends(get_current_user)],
+) -> CommonResponseSchema:
+    """
+    Logout the current user:
+    - **Authorization**: Bearer token required
+    - **Action**: Deletes all refresh tokens associated with the user ID
+    """
+    try:
+        return await logout_user(db=db, auth_user=auth_user)
+    except UserBaseException as err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)
+        )
+
+
+@user_router.post(
+    "/refresh",
+    status_code=status.HTTP_200_OK,
+    response_model=RefreshTokenResponseSchema,
+    summary="Refresh access token",
+    responses={
+        401: {"description": "Invalid or expired refresh token"},
+    },
+)
+async def refresh(
+        token_data: RefreshTokenSchema,
+        db: Annotated[AsyncSession, Depends(get_db)],
+        jwt_manager: Annotated[
+            JWTAuthManagerInterface, Depends(get_jwt_manager)],
+        settings: Annotated[BaseAppSettings, Depends(get_settings)],
+) -> RefreshTokenResponseSchema:
+    """
+    Get a new access token using a refresh token:
+    - **refresh_token**: Must be token previously issued and present in DB
+    - **Returns**: A new access token (JWT)
+    """
+    try:
+        return await refresh_token(
+            token=token_data,
+            db=db,
+            jwt_manager=jwt_manager,
+            settings=settings
+        )
+    except UserBaseException as err:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail=str(err)
         )

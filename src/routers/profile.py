@@ -7,7 +7,7 @@ from src.crud import prepare_profile_pdf_response
 from src.exceptions import (
     TokenExpiredError,
     InvalidTokenError,
-    UserNotFoundException,
+    UserNotFoundException, UserBaseException,
 )
 from src.schemas import UserReadSchema
 from src.security.utils import get_current_user
@@ -16,7 +16,7 @@ profile_router = APIRouter(tags=["Profile"])
 
 
 @profile_router.get(
-    "/profile",
+    "/me/profile",
     summary="Download user profile PDF",
     description="Return a PDF document containing user profile details.",
     responses={
@@ -58,6 +58,11 @@ async def get_profile(
                     "Content-Disposition":
                         f'attachment; filename="profile_{auth_user.id}.pdf"'
                 }
+            )
+        except UserBaseException as err:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=str(err)
             )
         except httpx.RequestError:
             raise HTTPException(

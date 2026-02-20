@@ -38,19 +38,19 @@ async def test_register_and_login_flow():
             "date_of_birth": "1995-01-01",
             "password": "strongPassword!123",
         }
-        response = await ac.post("/api/v1/register", json=user_data)
+        response = await ac.post("/api/v1/users", json=user_data)
         assert response.status_code == 201
 
         login_data = {
             "email": "test_user_unique@example.com",
             "password": "strongPassword!123",
         }
-        login_response = await ac.post("/api/v1/login", json=login_data)
+        login_response = await ac.post("/api/v1/sessions", json=login_data)
         assert login_response.status_code == 200
         token = login_response.json()["access_token"]
 
         headers = {"Authorization": f"Bearer {token}"}
-        profile_response = await ac.get("/api/v1/profile", headers=headers)
+        profile_response = await ac.get("/api/v1/me/profile", headers=headers)
 
         assert profile_response.status_code == 200
         assert profile_response.headers["content-type"] == "application/pdf"

@@ -47,3 +47,15 @@ class LoginResponseSchema(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str
+
+
+class CommonResponseSchema(BaseModel):
+    message: str
+
+
+class RefreshTokenSchema(BaseModel):
+    refresh_token: str
+
+
+class RefreshTokenResponseSchema(BaseModel):
+    access_token: str

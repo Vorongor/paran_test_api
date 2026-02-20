@@ -5,14 +5,16 @@ from fastapi.security import (
     HTTPAuthorizationCredentials,
     HTTPBearer,
 )
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from src.database import get_db
 from src.database.models import UserModel
 from src.exceptions import (
     TokenExpiredError,
     InvalidTokenError,
-    UserNotFoundException,
+    UserNotFoundException, UserBaseException,
 )
 from src.schemas import UserReadSchema
 from src.security import JWTAuthManagerInterface
@@ -35,11 +37,21 @@ async def get_current_user(
 
     user_id = user_data.get("user_id")
 
-    auth_user = await db.get(UserModel, user_id)
+    result = await db.execute(
+        select(UserModel)
+        .options(joinedload(UserModel.refresh_tokens))
+        .where(UserModel.id == user_id)
+    )
+    auth_user = result.unique().scalar_one_or_none()
 
     if not auth_user:
         raise UserNotFoundException(
             message="User not found with provided credentials.",
+        )
+
+    if not auth_user.refresh_tokens:
+        raise UserBaseException(
+            message="You are not logged in. Please log in first",
         )
 
     return UserReadSchema.model_validate(auth_user)
