@@ -1,1 +1,98 @@
-"# paran_test_api" 
+# 🚀 User Profile & Auth API (FastAPI)
+
+A high-performance, asynchronous REST API system built with **FastAPI** and *
+*PostgreSQL**. The project implements a secure authentication flow and a
+dedicated PDF generation service, adhering to a clean, layered architecture.
+
+# 🛠 Tech Stack
+
+- Framework: FastAPI
+- Database: PostgreSQL
+- ORM: SQLAlchemy 2.0 (Async)
+- Migrations: Alembic
+- Validation: Pydantic v2
+- Security: PyJWT, bcrypt
+- Deployment: Docker & Docker Compose
+
+# Project structure
+
+```
+.
+├── src/
+│   ├── config/                  # Contain settings and dependencies
+│   │   ├── dependencies.py      # core dependencies (get_settings, get_jwt_manager)
+│   │   └── settings.py          # All settings entities
+│   ├── crud/                    # Database logic
+│   │   ├── profile.py           # Retrieve prifile logic
+│   │   └── user.py              # User auth logic
+│   ├── database/                # Database logic
+│   │   ├── migrations/          # Alembic data
+│   │   │   ├── versions/        # Migrations files
+│   │   │   └── env.py           # Alembic configuration
+│   │   ├── models/              # App models
+│   │   │   └── user.py          # User and RefreshTOken models
+│   │   ├── base.py              # Initialization of base model
+│   │   └── engine.py            # DB engine and session, get_db dependency
+│   ├── exceptions/              # Custom exceptions
+│   │   ├── user.py              # User custom exceptions
+│   │   └── security.py          # Security custom exceptions
+│   ├── routers/                 # App routers
+│   │   ├── api.py               # Router version controler
+│   │   ├── profile.py           # Profile endpoints
+│   │   └── user.py              # Auth endpoints
+│   ├── schemas/                 # Pydentic schemas
+│   │   └── user.py              # Auth schemas
+│   ├── security/                # App security ligic
+│   │   ├── interfaces.py        # JWT manager interface
+│   │   ├── password.py          # Password processing helpers
+│   │   ├── token_manager.py     # JWT manager
+│   │   └── utils.py             # get_current_user dependency (retrieve auth user for protected endpoints)
+│   ├── services/                # App services
+│   │   └── profile/             # PDF Generation Service
+│   ├── tests/                   # App tests
+│   ├── validators/              # App validators
+│   └── main.py                  # App entry point
+├── Dockerfile                   # App image instruction
+├── docker-compose.yml           # Main runner
+├── docker-compose.override.yml  # Pytest suite
+├── pyproject.toml               # App configuration
+├── .env.sample                  # App envinroment variables
+└── requirements.txt             # Main requirements
+```
+
+# Core Dependencies
+
+The project utilizes FastAPI's Depends for clean Dependency Injection:
+- **get_settings**: Returns the current configuration (
+  1. LocalSettings - if project run locally, db - sqlite3
+  2. Setting - if project run through docker-compose, db - postgresql
+  3. TestingSettings - if project run in testings mode, db - sqlite3:inmemory
+- **get_db**: Provides an asynchronous bd session - based on env and settings.
+- **get_jwt_manager**: Returns the JWT handler based on an interface.
+- **get_current_user**: Secures endpoints by validating the bearer token.
+
+
+# Run project
+
+1. Prerequisites: Docker and Docker Compose.
+2. Copy .env.sample into .env and populate data.
+3. Launch the Project
+   Run the following command to build the image and start the PostgreSQL
+   database and API:
+
+```Bash
+  docker compose up --build
+```
+
+API Documentation: http://localhost:8000/docs (Swagger UI)
+
+🧪 Testing
+The project includes a pytest suite configured to run in an isolated
+environment via a Docker override.
+
+**Don't forget build before testing**
+
+```Bash
+  # Run tests inside the docker environment
+  docker compose run --rm tester
+```

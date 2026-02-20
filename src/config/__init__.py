@@ -4,7 +4,7 @@ from src.config.settings import (
     LocalSettings,
     TestingSettings,
 )
-from src.config.dependency import (
+from src.config.dependencies import (
     get_settings,
     get_jwt_manager,
     SettingsDep,
