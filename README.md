@@ -52,6 +52,7 @@ dedicated PDF generation service, adhering to a clean, layered architecture.
 │   │   └── profile/             # PDF Generation Service
 │   ├── tests/                   # App tests
 │   ├── validators/              # App validators
+│   ├── pdf_main.py/             # Entry point to pdf service (run on port:8001)
 │   └── main.py                  # App entry point
 ├── Dockerfile                   # App image instruction
 ├── compose.yml                  # Main runner
