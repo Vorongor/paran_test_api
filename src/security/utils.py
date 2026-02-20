@@ -14,7 +14,8 @@ from src.database.models import UserModel
 from src.exceptions import (
     TokenExpiredError,
     InvalidTokenError,
-    UserNotFoundException, UserBaseException,
+    UserNotFoundException,
+    UserBaseException,
 )
 from src.schemas import UserReadSchema
 from src.security import JWTAuthManagerInterface

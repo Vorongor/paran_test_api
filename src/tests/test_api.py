@@ -17,15 +17,14 @@ async def test_register_and_login_flow():
     Test flow for registering and login then retrieve new user
     """
     async with engine.begin() as conn:
-        await conn.run_sync(
-            Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
     pdf_route = respx.post("http://pdf_service:8001/generate").mock(
         return_value=Response(
             200,
             content=b"fake_pdf_content",
-            headers={"Content-Type": "application/pdf"}
+            headers={"Content-Type": "application/pdf"},
         )
     )
 

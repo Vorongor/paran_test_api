@@ -8,7 +8,7 @@ from src.config import (
     SettingsDep,
     BaseAppSettings,
     get_settings,
-    get_jwt_manager
+    get_jwt_manager,
 )
 from src.crud import create_new_user, login_user, logout_user, refresh_token
 from src.database import get_db
@@ -39,8 +39,7 @@ user_router = APIRouter(tags=["Authentication"])
     },
 )
 async def register(
-        user_data: UserCreateSchema,
-        db: Annotated[AsyncSession, Depends(get_db)]
+    user_data: UserCreateSchema, db: Annotated[AsyncSession, Depends(get_db)]
 ) -> UserReadSchema:
     """
     Register a new user in the system.
@@ -72,10 +71,10 @@ async def register(
     },
 )
 async def login(
-        login_data: LoginRequestSchema,
-        db: Annotated[AsyncSession, Depends(get_db)],
-        jwt_manager: JWTManagerDep,
-        settings: SettingsDep,
+    login_data: LoginRequestSchema,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    jwt_manager: JWTManagerDep,
+    settings: SettingsDep,
 ) -> LoginResponseSchema:
     """
     Authenticate a user and return JWT tokens.
@@ -105,11 +104,11 @@ async def login(
     response_model=CommonResponseSchema,
     summary="Logout user",
     description="Invalidates user sessions by deleting "
-                "all refresh tokens from the database.",
+    "all refresh tokens from the database.",
 )
 async def logout(
-        db: Annotated[AsyncSession, Depends(get_db)],
-        auth_user: Annotated[UserReadSchema, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    auth_user: Annotated[UserReadSchema, Depends(get_current_user)],
 ) -> CommonResponseSchema:
     """
     Logout the current user:
@@ -134,11 +133,10 @@ async def logout(
     },
 )
 async def refresh(
-        token_data: RefreshTokenSchema,
-        db: Annotated[AsyncSession, Depends(get_db)],
-        jwt_manager: Annotated[
-            JWTAuthManagerInterface, Depends(get_jwt_manager)],
-        settings: Annotated[BaseAppSettings, Depends(get_settings)],
+    token_data: RefreshTokenSchema,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    jwt_manager: Annotated[JWTAuthManagerInterface, Depends(get_jwt_manager)],
+    settings: Annotated[BaseAppSettings, Depends(get_settings)],
 ) -> RefreshTokenResponseSchema:
     """
     Get a new access token using a refresh token:
@@ -147,10 +145,7 @@ async def refresh(
     """
     try:
         return await refresh_token(
-            token=token_data,
-            db=db,
-            jwt_manager=jwt_manager,
-            settings=settings
+            token=token_data, db=db, jwt_manager=jwt_manager, settings=settings
         )
     except UserBaseException as err:
         raise HTTPException(

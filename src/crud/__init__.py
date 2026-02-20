@@ -2,7 +2,7 @@ from src.crud.user import (
     create_new_user,
     login_user,
     logout_user,
-    refresh_token
+    refresh_token,
 )
 from src.crud.profile import prepare_profile_pdf_response
 

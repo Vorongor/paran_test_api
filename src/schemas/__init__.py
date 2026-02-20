@@ -5,7 +5,7 @@ from src.schemas.user import (
     LoginResponseSchema,
     RefreshTokenSchema,
     RefreshTokenResponseSchema,
-    CommonResponseSchema
+    CommonResponseSchema,
 )
 
 __all__ = [
@@ -15,5 +15,5 @@ __all__ = [
     "LoginResponseSchema",
     "RefreshTokenSchema",
     "RefreshTokenResponseSchema",
-    "CommonResponseSchema"
+    "CommonResponseSchema",
 ]

@@ -19,7 +19,9 @@ from src.schemas import (
     UserCreateSchema,
     UserReadSchema,
     LoginRequestSchema,
-    LoginResponseSchema, CommonResponseSchema, RefreshTokenSchema,
+    LoginResponseSchema,
+    CommonResponseSchema,
+    RefreshTokenSchema,
     RefreshTokenResponseSchema,
 )
 from src.security import JWTAuthManagerInterface
@@ -42,8 +44,7 @@ async def _get_user_by_email(email: str, db: AsyncSession) -> UserModel:
 
 
 async def create_new_user(
-        user_data: UserCreateSchema,
-        db: Annotated[AsyncSession, Depends(get_db)]
+    user_data: UserCreateSchema, db: Annotated[AsyncSession, Depends(get_db)]
 ) -> UserReadSchema:
     """
     Registers a new user in the system.
@@ -90,11 +91,10 @@ async def create_new_user(
 
 
 async def login_user(
-        login_data: LoginRequestSchema,
-        db: Annotated[AsyncSession, Depends(get_db)],
-        jwt_manager: Annotated[
-            JWTAuthManagerInterface, Depends(get_jwt_manager)],
-        settings: Annotated[BaseAppSettings, Depends(get_settings)],
+    login_data: LoginRequestSchema,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    jwt_manager: Annotated[JWTAuthManagerInterface, Depends(get_jwt_manager)],
+    settings: Annotated[BaseAppSettings, Depends(get_settings)],
 ) -> LoginResponseSchema:
     """
     Authenticates a user and generates access/refresh tokens.
@@ -150,19 +150,19 @@ async def login_user(
 
 
 async def logout_user(
-        db: Annotated[AsyncSession, Depends(get_db)],
-        auth_user: Annotated[UserReadSchema, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    auth_user: Annotated[UserReadSchema, Depends(get_current_user)],
 ) -> CommonResponseSchema:
     """
-        Invalides user sessions by deleting refresh tokens.
+    Invalides user sessions by deleting refresh tokens.
 
-        Args:
-            db (AsyncSession): Database session.
-            auth_user (UserReadSchema): Currently authenticated user.
+    Args:
+        db (AsyncSession): Database session.
+        auth_user (UserReadSchema): Currently authenticated user.
 
-        Returns:
-            CommonResponseSchema: Success message.
-        """
+    Returns:
+        CommonResponseSchema: Success message.
+    """
     stmt = delete(RefreshTokenModel).where(
         RefreshTokenModel.user_id == auth_user.id
     )
@@ -179,29 +179,29 @@ async def logout_user(
 
 
 async def refresh_token(
-        token: RefreshTokenSchema,
-        jwt_manager: Annotated[
-            JWTAuthManagerInterface, Depends(get_jwt_manager)],
-        settings: Annotated[BaseAppSettings, Depends(get_settings)],
-        db: Annotated[AsyncSession, Depends(get_db)],
+    token: RefreshTokenSchema,
+    jwt_manager: Annotated[JWTAuthManagerInterface, Depends(get_jwt_manager)],
+    settings: Annotated[BaseAppSettings, Depends(get_settings)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ) -> RefreshTokenResponseSchema:
     """
-        Issues a new access token using a valid refresh token.
+    Issues a new access token using a valid refresh token.
 
-        Args:
-            token_data (RefreshTokenSchema): The refresh token.
-            db (AsyncSession): Database session for token validation.
-            jwt_manager (JWTAuthManagerInterface): Token manager.
-            settings (BaseAppSettings): App configuration.
+    Args:
+        token_data (RefreshTokenSchema): The refresh token.
+        db (AsyncSession): Database session for token validation.
+        jwt_manager (JWTAuthManagerInterface): Token manager.
+        settings (BaseAppSettings): App configuration.
 
-        Returns:
-            RefreshTokenResponseSchema: New access token.
+    Returns:
+        RefreshTokenResponseSchema: New access token.
 
-        Raises:
-            UserBaseException: If token is invalid or not found in DB.
+    Raises:
+        UserBaseException: If token is invalid or not found in DB.
     """
     stmt = select(RefreshTokenModel).where(
-        RefreshTokenModel.token == token.refresh_token)
+        RefreshTokenModel.token == token.refresh_token
+    )
     result = await db.execute(stmt)
     db_token = result.scalar_one_or_none()
 
