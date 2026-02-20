@@ -5,6 +5,7 @@ from src.schemas import UserReadSchema
 
 app = FastAPI(title="PDF Generation Service")
 
+
 @app.post("/generate")
 async def generate_pdf(user: UserReadSchema):
     pdf_buffer = prepare_profile_pdf_response(user)

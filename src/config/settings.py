@@ -2,6 +2,7 @@ from pathlib import Path
 
 from pydantic import computed_field, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy import StaticPool
 
 
 class BaseAppSettings(BaseSettings):
@@ -62,7 +63,9 @@ class TestingSettings(BaseAppSettings):
     SECRET_KEY_ACCESS: str = "test_secret"
     SECRET_KEY_REFRESH: str = "test_secret"
 
-    @computed_field
-    @property
-    def DATABASE_URL(self) -> str:
-        return "sqlite+aiosqlite:///:memory:"
+    DATABASE_URL: str = "sqlite+aiosqlite:///:memory:"
+
+    ENGINE_KWARGS: dict = {
+        "poolclass": StaticPool,
+        "connect_args": {"check_same_thread": False},
+    }

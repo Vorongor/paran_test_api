@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Annotated
 
 from fastapi.params import Depends
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,8 +20,12 @@ from src.schemas import (
     UserReadSchema,
     LoginRequestSchema,
     LoginResponseSchema,
+    CommonResponseSchema,
+    RefreshTokenSchema,
+    RefreshTokenResponseSchema,
 )
 from src.security import JWTAuthManagerInterface
+from src.security.utils import get_current_user
 
 
 async def _get_user_by_email(email: str, db: AsyncSession) -> UserModel:
@@ -143,3 +147,81 @@ async def login_user(
         raise UserBaseException(
             message="Could not establish secure session. Please try again."
         )
+
+
+async def logout_user(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    auth_user: Annotated[UserReadSchema, Depends(get_current_user)],
+) -> CommonResponseSchema:
+    """
+    Invalides user sessions by deleting refresh tokens.
+
+    Args:
+        db (AsyncSession): Database session.
+        auth_user (UserReadSchema): Currently authenticated user.
+
+    Returns:
+        CommonResponseSchema: Success message.
+    """
+    stmt = delete(RefreshTokenModel).where(
+        RefreshTokenModel.user_id == auth_user.id
+    )
+
+    try:
+        await db.execute(stmt)
+        await db.commit()
+    except SQLAlchemyError:
+        await db.rollback()
+        raise
+    return CommonResponseSchema(
+        message="Successfully logged out from all devices",
+    )
+
+
+async def refresh_token(
+    token: RefreshTokenSchema,
+    jwt_manager: Annotated[JWTAuthManagerInterface, Depends(get_jwt_manager)],
+    settings: Annotated[BaseAppSettings, Depends(get_settings)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> RefreshTokenResponseSchema:
+    """
+    Issues a new access token using a valid refresh token.
+
+    Args:
+        token_data (RefreshTokenSchema): The refresh token.
+        db (AsyncSession): Database session for token validation.
+        jwt_manager (JWTAuthManagerInterface): Token manager.
+        settings (BaseAppSettings): App configuration.
+
+    Returns:
+        RefreshTokenResponseSchema: New access token.
+
+    Raises:
+        UserBaseException: If token is invalid or not found in DB.
+    """
+    stmt = select(RefreshTokenModel).where(
+        RefreshTokenModel.token == token.refresh_token
+    )
+    result = await db.execute(stmt)
+    db_token = result.scalar_one_or_none()
+
+    if not db_token:
+        raise UserBaseException(message="Refresh token is invalid or expired")
+
+    payload = jwt_manager.decode_refresh_token(token.refresh_token)
+
+    user_id = payload.get("id")
+    email = payload.get("email")
+
+    if not user_id or not email:
+        raise UserBaseException(message="Invalid token credentials")
+
+    new_token = jwt_manager.create_access_token(
+        data={
+            "user_id": user_id,
+            "email": email,
+        },
+        expires_delta=timedelta(minutes=settings.ACCESS_KEY_TIMEDELTA_MINUTES),
+    )
+
+    return RefreshTokenResponseSchema(access_token=new_token)
