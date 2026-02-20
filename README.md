@@ -13,6 +13,7 @@ dedicated PDF generation service, adhering to a clean, layered architecture.
 - Validation: Pydantic v2
 - Security: PyJWT, bcrypt
 - Deployment: Docker & Docker Compose
+- pdf2: Create user profile file
 
 # Project structure
 
