@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     JWT_SIGNING_ALGORITHM: str = "HS256"
 
     PDF_SERVICE_URL: str = Field(
-        "http://pdf_service:8001/generate", alias="PDF_SERVICE_URL"
+        "http://pdf_service:8001/pdf/generate", alias="PDF_SERVICE_URL"
     )
 
     POSTGRES_USER: str

@@ -6,7 +6,7 @@ from pdf_service.schemas import UserReadSchema
 pdf_router = APIRouter()
 
 
-@pdf_router.post("/pdf")
+@pdf_router.post("/pdf/generate")
 async def generate_pdf(
         user: UserReadSchema,
 ):

@@ -4,7 +4,7 @@ import httpx
 from fastapi import HTTPException, status
 from fastapi.params import Depends
 
-from auth_service.config import Settings, get_settings
+from auth_service.config import Settings, get_settings, setup_logging
 from auth_service.schemas import UserReadSchema
 from auth_service.security.utils import get_current_user
 

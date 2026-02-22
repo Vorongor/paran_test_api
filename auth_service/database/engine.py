@@ -1,3 +1,4 @@
+import logging
 from typing import AsyncGenerator
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -7,9 +8,11 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
 )
 
-from auth_service.config import get_settings
+from auth_service.config import get_settings, setup_logging
 
 settings = get_settings()
+setup_logging()
+logger = logging.getLogger(__name__)
 
 connect_args = {}
 if settings.ENVIRONMENT == "docker":
@@ -19,6 +22,7 @@ if settings.ENVIRONMENT == "docker":
         "pool_recycle": 3600,
     }
 
+logger.info(f"Connecting to database: {settings.DATABASE_URL}")
 engine = create_async_engine(settings.DATABASE_URL, **connect_args)
 
 

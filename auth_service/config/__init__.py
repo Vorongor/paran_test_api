@@ -5,6 +5,7 @@ from auth_service.config.dependencies import (
     SettingsDep,
     JWTManagerDep,
 )
+from auth_service.config.logging_config import setup_logging
 
 __all__ = [
     "Settings",
@@ -12,4 +13,5 @@ __all__ = [
     "get_jwt_manager",
     "SettingsDep",
     "JWTManagerDep",
+    "setup_logging",
 ]
