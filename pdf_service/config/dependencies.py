@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from pdf_service.config import PDFSettings
+from pdf_service.security.token_manager import JWTAuthManager
 from pdf_service.storage.interfaces import SQSStorageInterface
 from pdf_service.storage.s3 import S3StorageClient
 from pdf_service.storage.sqs import SQSClient
@@ -42,18 +43,14 @@ async def get_sqs_manager(
     )
 
 
-# def get_jwt_manager(
-#     settings: Annotated[Settings, Depends(get_settings)],
-# ) -> JWTAuthManager:
-#     """
-#     Create and return a JWT authentication manager instance.
-#     """
-#     return JWTAuthManager(
-#         secret_key_access=settings.SECRET_KEY_ACCESS,
-#         secret_key_refresh=settings.SECRET_KEY_REFRESH,
-#         algorithm=settings.JWT_SIGNING_ALGORITHM,
-#     )
-#
-#
-# SettingsDep = Annotated[Settings, Depends(get_settings)]
-# JWTManagerDep = Annotated[JWTAuthManager, Depends(get_jwt_manager)]
+def get_jwt_manager(
+    settings: Annotated[PDFSettings, Depends(get_settings)],
+) -> JWTAuthManager:
+    """
+    Create and return a JWT authentication manager instance.
+    """
+    return JWTAuthManager(
+        secret_key_access=settings.SECRET_KEY_ACCESS,
+        secret_key_refresh=settings.SECRET_KEY_REFRESH,
+        algorithm=settings.JWT_SIGNING_ALGORITHM,
+    )

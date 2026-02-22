@@ -14,6 +14,7 @@ from pdf_service.crud import (
     retrieve_profile_pdf
 )
 from pdf_service.schemas import UserReadSchema
+from pdf_service.security.utils import get_current_user
 from pdf_service.storage.s3 import S3StorageClient
 from pdf_service.storage.sqs import SQSClient
 
@@ -23,6 +24,7 @@ pdf_router = APIRouter()
 @pdf_router.post("/pdf/generate")
 async def generate_pdf(
         user: UserReadSchema,
+        auth_user: Annotated[None, Depends(get_current_user)]  # noqa
 ):
     try:
         pdf_buffer = prepare_profile_pdf_response(user)
@@ -38,6 +40,7 @@ async def generate_pdf(
 async def start_pdf_generation(
         user_data: UserReadSchema,
         sqs_manager: Annotated[SQSClient, Depends(get_sqs_manager)],
+        auth_user: Annotated[None, Depends(get_current_user)]  # noqa
 ):
     try:
         return await generate_profile_pdf_in_storage(
@@ -55,7 +58,8 @@ async def start_pdf_generation(
 async def get_profile_pdf(
         file_name: str,
         settings: Annotated[PDFSettings, Depends(get_settings)],
-        s3_manager: Annotated[S3StorageClient, Depends(get_s3_manager)]
+        s3_manager: Annotated[S3StorageClient, Depends(get_s3_manager)],
+        auth_user: Annotated[None, Depends(get_current_user)]  # noqa
 ):
     try:
         return await retrieve_profile_pdf(
