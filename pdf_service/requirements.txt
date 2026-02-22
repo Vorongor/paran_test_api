@@ -1,0 +1,23 @@
+# Web Framework
+fastapi==0.129.0
+uvicorn==0.41.0
+starlette==0.52.1
+pydantic==2.12.5
+pydantic-settings==2.13.0
+
+# PDF Generation
+fpdf2==2.8.6
+pillow==12.1.1
+fonttools==4.61.1
+
+# AWS & SQS (Additional Task)
+aiobotocore==2.15.0
+
+# Security (Only for JWT decoding)
+python-jose==3.5.0
+cryptography==46.0.5
+python-dotenv==1.2.1
+
+# Utils
+httpx==0.28.1
+typing-extensions==4.15.0

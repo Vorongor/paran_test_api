@@ -1,0 +1,39 @@
+[project]
+name = "param-test-pdf-api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "pydantic-settings>=2.5.0",
+    "python-jose[cryptography]>=3.3.0",
+    "fpdf2>=2.8.6",
+    "aiobotocore>=2.15.0",
+    "python-dotenv>=1.0.0"
+]
+
+[dependency-groups]
+dev = [
+    "black>=26.1.0",
+    "flake8>=7.3.0",
+    "respx>=0.22.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = [".", "src"]
+testpaths = ["src/tests"]
+
+[tool.black]
+line-length = 79
+target-version = ["py313"]
+exclude = '''
+/(
+    migrations
+  | venv
+  | .venv
+  | __pycache__
+)/
+'''

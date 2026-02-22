@@ -17,38 +17,77 @@ services:
       timeout: 5s
       retries: 5
 
-  api:
-    build: .
-    container_name: project_api
+  localstack:
+    image: localstack/localstack
+    container_name: project_localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,sqs
+      - DEFAULT_REGION=us-east-1
+      - DEBUG=1
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  auth_api:
+    build:
+      context: ./auth_service
+      dockerfile: Dockerfile
+    container_name: auth_api
     env_file: .env
     ports:
       - "8000:8000"
-    volumes:
-      - ./src:/app/src
-      - ./alembic:/app/alembic
     depends_on:
       project_db:
         condition: service_healthy
       migrator:
         condition: service_completed_successfully
-    command: >
-      sh -c "uv run uvicorn src.main:app --host 0.0.0.0 --port 8000"
+    develop:
+      watch:
+        - path: ./auth_service/pyproject.toml
+          action: rebuild
+        - path: ./.env
+          action: rebuild
+        - path: ./auth_service/src
+          target: /app/src
+          action: sync
 
   pdf_service:
-    build: .
-    command: uvicorn src.pdf_main:app --host 0.0.0.0 --port 8001
+    build:
+      context: ./pdf_service
+      dockerfile: Dockerfile
+    container_name: pdf_api
     env_file: .env
+    ports:
+      - "8001:8001"
+    environment:
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - SQS_QUEUE_NAME=pdf-jobs
+      - S3_BUCKET_NAME=user-pdfs
+    depends_on:
+      - localstack
+    develop:
+      watch:
+        - path: ./pdf_service/pyproject.toml
+          action: rebuild
+        - path: ./.env
+          action: rebuild
+        - path: ./pdf_service/src
+          target: /app/src
+          action: sync
 
   migrator:
-    build: .
+    build:
+      context: ./auth_service
+      dockerfile: Dockerfile
     container_name: project_migrator
     env_file: .env
     depends_on:
       project_db:
         condition: service_healthy
     volumes:
-      - ./src:/app/src
-      - ./alembic.ini:/app/alembic.ini
+      - ./auth_service:/app/auth_service
+      - ./auth_service/alembic.ini:/app/auth_service/alembic.ini
     command: [ "uv", "run", "alembic", "upgrade", "head" ]
     restart: "no"
 

@@ -1,10 +1,30 @@
 services:
-  tester:
-    build: .
+  auth_tester:
+    build:
+      context: ./auth_service
+    image: auth_service_test
     profiles:
       - test
+    env_file: .env
     environment:
       - ENVIRONMENT=test
-    command: python -m pytest -s src/tests/test_api.py
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@project_db:5432/test_db
+    command: python -m pytest src/tests
     volumes:
-      - .:/app
+      - ./auth_service:/app
+    depends_on:
+      - project_db
+
+  pdf_tester:
+    build:
+      context: ./pdf_service
+    profiles:
+      - test
+    env_file: .env
+    environment:
+      - AWS_ENDPOINT_URL=http://localstack:4566
+    command: python -m pytest tests
+    volumes:
+      - ./pdf_service:/app
+    depends_on:
+      - localstack

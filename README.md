@@ -52,14 +52,63 @@ dedicated PDF generation service, adhering to a clean, layered architecture.
 │   │   └── profile/             # PDF Generation Service
 │   ├── tests/                   # App tests
 │   ├── validators/              # App validators
-│   ├── pdf_main.py/             # Entry point to pdf service (run on port:8001)
 │   └── main.py                  # App entry point
-├── Dockerfile                   # App image instruction
+
+├── auth_service/                # Auth App Dir
+│   ├── config/                  # Contain settings and dependencies
+│   │   ├── dependencies.py      # core dependencies (get_settings, get_jwt_manager)
+│   │   └── settings.py          # All settings entities
+│   ├── crud/                    # Database logic
+│   │   ├── profile.py           # Retrieve prifile logic
+│   │   └── user.py              # User auth logic
+│   ├── database/                # Database logic
+│   │   ├── migrations/          # Alembic data
+│   │   │   ├── versions/        # Migrations files
+│   │   │   └── env.py           # Alembic configuration
+│   │   ├── models/              # App models
+│   │   │   └── user.py          # User and RefreshTOken models
+│   │   ├── base.py              # Initialization of base model
+│   │   └── engine.py            # DB engine and session, get_db dependency
+│   ├── exceptions/              # Custom exceptions
+│   │   ├── user.py              # User custom exceptions
+│   │   └── security.py          # Security custom exceptions
+│   ├── routers/                 # App routers
+│   │   ├── api.py               # Router version controler
+│   │   ├── profile.py           # Profile endpoints
+│   │   └── user.py              # Auth endpoints
+│   ├── schemas/                 # Pydentic schemas
+│   │   └── user.py              # Auth schemas
+│   ├── security/                # App security ligic
+│   │   ├── interfaces.py        # JWT manager interface
+│   │   ├── password.py          # Password processing helpers
+│   │   ├── token_manager.py     # JWT manager
+│   │   └── utils.py             # get_current_user dependency (retrieve auth user for protected endpoints)
+│   ├── Dockerfile               # Auth App image instruction
+│   ├── pyproject.toml           # Auth App configuration
+│   ├── alembic.ini              # Auth App configuration
+│   ├── requirements.txt         
+│   └── main.py                  # App entry point
+├── pdf_service/                 # PDF App Dir
+│   ├── config/                  # Contain settings and dependencies
+│   │   ├── dependencies.py      # core dependencies (get_settings, get_jwt_manager)
+│   │   └── settings.py          # All settings entities
+│   ├── crud/                    # Database logic
+│   │   └── profile.py           # PDF profile logic logic
+│   ├── routers/                 # App routers
+│   │   └── pdf_router.py              
+│   ├── schemas/                 # Pydentic schemas
+│   │   └── profile.py           # Profile schemas
+│   ├── services/                # App services
+│   │   └── profile/             # PDF Generation Service
+│   ├── Dockerfile               # PDF App image instruction
+│   ├── pyproject.toml           # PDF App configuration
+│   ├── requirements.txt         
+│   └── pdf_main.py              # App entry point
 ├── compose.yml                  # Main runner
 ├── docker-compose.override.yml  # Pytest suite
 ├── pyproject.toml               # App configuration
 ├── .env.sample                  # App envinroment variables
-└── requirements.txt             # Main requirements
+└── requirements-dev.txt         # Main dev requirements
 ```
 
 # Core Dependencies
