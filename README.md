@@ -18,10 +18,11 @@ dedicated PDF generation service, adhering to a clean, layered architecture.
 # Project structure
 
 ```
-.
-├── src/
+/
+├── auth_service/                # Auth App Dir
 │   ├── config/                  # Contain settings and dependencies
-│   │   ├── dependencies.py      # core dependencies (get_settings, get_jwt_manager)
+│   │   ├── dependencies.py      # Core dependencies (get_settings, get_jwt_manager)
+│   │   ├── logging_config.py    # Logger setup
 │   │   └── settings.py          # All settings entities
 │   ├── crud/                    # Database logic
 │   │   ├── profile.py           # Retrieve prifile logic
@@ -48,18 +49,47 @@ dedicated PDF generation service, adhering to a clean, layered architecture.
 │   │   ├── password.py          # Password processing helpers
 │   │   ├── token_manager.py     # JWT manager
 │   │   └── utils.py             # get_current_user dependency (retrieve auth user for protected endpoints)
+│   ├── validators/              # Service validators
+│   │   └── password.py          # Password valodator
+│   ├── Dockerfile               # Auth App image instruction
+│   ├── pyproject.toml           # Auth App configuration
+│   ├── alembic.ini              # Auth App configuration
+│   ├── requirements.txt         
+│   └── main.py                  # App entry point
+├── pdf_service/                 # PDF App Dir
+│   ├── config/                  # Contain settings and dependencies
+│   │   ├── dependencies.py      # core dependencies (get_settings, get_jwt_manager)
+│   │   ├── logging_config.py    # Logger setup
+│   │   └── settings.py          # All settings entities
+│   ├── crud/                    # Database logic
+│   │   └── profile.py           # PDF profile logic logic
+│   ├── routers/                 # App routers
+│   │   └── pdf_router.py              
+│   ├── schemas/                 # Pydentic schemas
+│   │   └── profile.py           # Profile schemas
+│   ├── security/                # Contain settings and dependencies
+│   │   ├── interfaces.py        # JWT manager interface
+│   │   ├── token_manager.py     # JWT manager
+│   │   └── utils.py             # get_current_user dependency (retrieve auth user for protected endpoints)
 │   ├── services/                # App services
 │   │   └── profile/             # PDF Generation Service
-│   ├── tests/                   # App tests
-│   ├── validators/              # App validators
-│   ├── pdf_main.py/             # Entry point to pdf service (run on port:8001)
-│   └── main.py                  # App entry point
-├── Dockerfile                   # App image instruction
+│   ├── storage/                 # Contain settings and dependencies
+│   │   ├── interfaces.py        # S3 and SQS managers interfaces
+│   │   ├── s3.py                # S3 manager
+│   │   ├── sqs.py               # SQS manager
+│   │   └── exeptions.py         # S3 and SQS exceptions
+│   ├── Dockerfile               # PDF App image instruction
+│   ├── pyproject.toml           # PDF App configuration
+│   ├── init-aws.sh              # Initial command for queue and storage
+│   ├── worker.py                # Script for runnig pdf_saver worker 
+│   ├── requirements.txt         
+│   └── pdf_main.py              # App entry point
+├── tests/                       # App tests
 ├── compose.yml                  # Main runner
 ├── docker-compose.override.yml  # Pytest suite
 ├── pyproject.toml               # App configuration
 ├── .env.sample                  # App envinroment variables
-└── requirements.txt             # Main requirements
+└── requirements-dev.txt         # Main dev requirements
 ```
 
 # Core Dependencies
@@ -94,7 +124,16 @@ environment via a Docker override.
 
 **Don't forget build before testing**
 
+
 ```Bash
-  # Run tests inside the docker environment
-  docker compose run --rm tester
+  # Run infrastructure
+  docker compose up -d project_db localstack
+
+  # Run Auth test
+  docker compose run --rm auth_tester
+
+  # Run PDF test
+  docker compose run --rm pdf_tester
+  # Run end-to-end test inside the docker environment
+  docker compose --profile e2e_test up --build --attach e2e_tester
 ```

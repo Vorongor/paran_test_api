@@ -1,10 +1,37 @@
 services:
-  tester:
-    build: .
+  auth_tester:
+    build:
+      context: ./auth_service
+    image: auth_service_test
     profiles:
       - test
+    env_file: .env
     environment:
       - ENVIRONMENT=test
-    command: python -m pytest -s src/tests/test_api.py
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@project_db:5432/test_db
+    command: >
+      sh -c "pip install -r /app/requirements-test-auth.txt && 
+             python -m pytest tests/test_auth"
     volumes:
       - .:/app
+    depends_on:
+      project_db:
+        condition: service_healthy
+
+  pdf_tester:
+    build:
+      context: ./pdf_service
+    profiles:
+      - test
+    env_file: .env
+    environment:
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - SQS_QUEUE_NAME=pdf-jobs
+      - S3_BUCKET_NAME=user-pdfs
+    command: >
+      sh -c "pip install -r /app/requirements-test-pdf.txt && 
+             python -m pytest tests/test_pdf"
+    volumes:
+      - .:/app
+    depends_on:
+      - localstack

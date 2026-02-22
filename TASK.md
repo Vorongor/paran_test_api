@@ -26,3 +26,9 @@ Nice to have
 - Split auth and PDF generation into 2 independent services that communicate only via JWT (no shared DB) -Done
 - docker-compose.override.yml for running the pytest suite in isolation - Done
 - Split requirements.txt into requirements.txt and requirements-dev.txt (or requirements-test.txt)
+
+Additional task:
+Якщо буде бажання - кандидат може спробувати додати в проект таке:
+Pdf сервіс буде мати ще один ендпоінт для того, щоб зберегти pdf в s3. Але це має відбуватись через sqs, тобто: 
+pdf svc -> sqs -> pdf saver -> s3. Sqs і s3 треба реалізувати через aws localstack.
+Якщо не вийде, то ок, але хочу почути, що саме не вийшло і чому.

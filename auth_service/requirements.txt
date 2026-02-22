@@ -1,0 +1,25 @@
+# Web Framework
+fastapi==0.129.0
+uvicorn==0.41.0
+starlette==0.52.1
+pydantic==2.12.5
+pydantic-settings==2.13.0
+
+# Database & Migrations
+sqlalchemy==2.0.46
+asyncpg==0.31.0
+alembic==1.18.4
+greenlet==3.3.1
+aiosqlite==0.22.1
+
+# Security & Auth
+bcrypt==5.0.0
+python-jose==3.5.0
+cryptography==46.0.5
+python-dotenv==1.2.1
+email-validator==2.3.0
+
+# Utils
+typing-extensions==4.15.0
+anyio==4.12.1
+idna==3.11

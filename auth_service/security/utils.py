@@ -1,0 +1,58 @@
+from typing import Annotated
+
+from fastapi import Depends
+from fastapi.security import (
+    HTTPAuthorizationCredentials,
+    HTTPBearer,
+)
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
+
+from auth_service.database import get_db
+from auth_service.database.models import UserModel
+from auth_service.exceptions import (
+    TokenExpiredError,
+    InvalidTokenError,
+    UserNotFoundException,
+    UserBaseException,
+)
+from auth_service.schemas import UserReadSchema
+from auth_service.security import JWTAuthManagerInterface
+from auth_service.config import get_jwt_manager
+
+security_scheme = HTTPBearer()
+
+
+async def get_current_user(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    auth: Annotated[HTTPAuthorizationCredentials, Depends(security_scheme)],
+    jwt_manager: Annotated[JWTAuthManagerInterface, Depends(get_jwt_manager)],
+) -> UserReadSchema:
+    token = auth.credentials
+    try:
+        user_data = jwt_manager.decode_access_token(token)
+
+    except (TokenExpiredError, InvalidTokenError):
+        raise
+
+    user_id = user_data.get("user_id")
+
+    result = await db.execute(
+        select(UserModel)
+        .options(joinedload(UserModel.refresh_tokens))
+        .where(UserModel.id == user_id)
+    )
+    auth_user = result.unique().scalar_one_or_none()
+
+    if not auth_user:
+        raise UserNotFoundException(
+            message="User not found with provided credentials.",
+        )
+
+    if not auth_user.refresh_tokens:
+        raise UserBaseException(
+            message="You are not logged in. Please log in first",
+        )
+
+    return UserReadSchema.model_validate(auth_user)
