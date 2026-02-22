@@ -30,13 +30,15 @@ async def run_worker():
 
                 logger.info(f"Processing job: {job_id}")
 
-                pdf_bytes = generate_user_pdf(UserReadSchema(
-                    id=user_data.get("id"),
-                    name=user_data.get("name"),
-                    surname=user_data.get("surname"),
-                    email=user_data.get("email"),
-                    date_of_birth=user_data.get("date_of_birth"),
-                ))
+                pdf_bytes = generate_user_pdf(
+                    UserReadSchema(
+                        id=user_data.get("id"),
+                        name=user_data.get("name"),
+                        surname=user_data.get("surname"),
+                        email=user_data.get("email"),
+                        date_of_birth=user_data.get("date_of_birth"),
+                    )
+                )
 
                 file_name = f"{job_id}.pdf"
                 await s3.upload_file(file_name, pdf_bytes)

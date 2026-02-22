@@ -9,11 +9,14 @@ services:
     environment:
       - ENVIRONMENT=test
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@project_db:5432/test_db
-    command: python -m pytest src/tests
+    command: >
+      sh -c "pip install -r /app/requirements-test-auth.txt && 
+             python -m pytest tests/test_auth"
     volumes:
-      - ./auth_service:/app
+      - .:/app
     depends_on:
-      - project_db
+      project_db:
+        condition: service_healthy
 
   pdf_tester:
     build:
@@ -23,8 +26,12 @@ services:
     env_file: .env
     environment:
       - AWS_ENDPOINT_URL=http://localstack:4566
-    command: python -m pytest tests
+      - SQS_QUEUE_NAME=pdf-jobs
+      - S3_BUCKET_NAME=user-pdfs
+    command: >
+      sh -c "pip install -r /app/requirements-test-pdf.txt && 
+             python -m pytest tests/test_pdf"
     volumes:
-      - ./pdf_service:/app
+      - .:/app
     depends_on:
       - localstack

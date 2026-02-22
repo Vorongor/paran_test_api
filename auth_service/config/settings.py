@@ -19,12 +19,8 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_DAYS: int = 7
     ACCESS_KEY_TIMEDELTA_MINUTES: int = 60
 
-    SECRET_KEY_ACCESS: str = Field(
-        "placeholder_access", alias="SECRET_KEY_ACCESS"
-    )
-    SECRET_KEY_REFRESH: str = Field(
-        "placeholder_refresh", alias="SECRET_KEY_REFRESH"
-    )
+    SECRET_KEY_ACCESS: str = Field("placeholder_access", alias="SECRET_KEY_ACCESS")
+    SECRET_KEY_REFRESH: str = Field("placeholder_refresh", alias="SECRET_KEY_REFRESH")
     JWT_SIGNING_ALGORITHM: str = "HS256"
 
     PDF_SERVICE_URL: str = Field(
@@ -32,7 +28,7 @@ class Settings(BaseSettings):
     )
     PDF_SERVICE_URL_IN_STORAGE: str = Field(
         "http://127.0.0.1:8001/pdf/generate-in-storage",
-        alias="PDF_SERVICE_URL_IN_STORAGE"
+        alias="PDF_SERVICE_URL_IN_STORAGE",
     )
 
     POSTGRES_USER: str

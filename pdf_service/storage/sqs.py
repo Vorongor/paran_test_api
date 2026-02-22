@@ -11,12 +11,12 @@ logger = logging.getLogger(__name__)
 
 class SQSClient(SQSStorageInterface):
     def __init__(
-            self,
-            endpoint_url: str,
-            access_key: str,
-            secret_key: str,
-            queue_name: str,
-            region_name: str
+        self,
+        endpoint_url: str,
+        access_key: str,
+        secret_key: str,
+        queue_name: str,
+        region_name: str,
     ):
         self._endpoint_url = endpoint_url
         self._queue_name = queue_name
@@ -28,42 +28,32 @@ class SQSClient(SQSStorageInterface):
 
     async def send_message(self, body: dict) -> None:
         async with self._session.client(
-                "sqs",
-                endpoint_url=self._endpoint_url,
-                region_name=self._region_name
+            "sqs", endpoint_url=self._endpoint_url, region_name=self._region_name
         ) as client:
             result = await client.get_queue_url(QueueName=self._queue_name)
 
             queue_url = result["QueueUrl"]
 
-            await client.send_message(
-                QueueUrl=queue_url, MessageBody=json.dumps(body)
-            )
+            await client.send_message(QueueUrl=queue_url, MessageBody=json.dumps(body))
             logger.info(f"Message sent to SQS: {body.get('job_id')}")
 
     async def receive_messages(self, max_messages: int = 1) -> list[str]:
         async with self._session.client(
-                "sqs",
-                endpoint_url=self._endpoint_url,
-                region_name=self._region_name
+            "sqs", endpoint_url=self._endpoint_url, region_name=self._region_name
         ) as client:
             result = await client.get_queue_url(QueueName=self._queue_name)
 
             queue_url = result["QueueUrl"]
 
             response = await client.receive_message(
-                QueueUrl=queue_url,
-                MaxNumberOfMessages=max_messages,
-                WaitTimeSeconds=10
+                QueueUrl=queue_url, MaxNumberOfMessages=max_messages, WaitTimeSeconds=10
             )
 
             return response.get("Messages", [])
 
     async def delete_message(self, receipt_handle: str):
         async with self._session.client(
-                "sqs",
-                endpoint_url=self._endpoint_url,
-                region_name=self._region_name
+            "sqs", endpoint_url=self._endpoint_url, region_name=self._region_name
         ) as client:
             result = await client.get_queue_url(QueueName=self._queue_name)
 

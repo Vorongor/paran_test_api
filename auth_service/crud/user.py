@@ -163,9 +163,7 @@ async def logout_user(
     Returns:
         CommonResponseSchema: Success message.
     """
-    stmt = delete(RefreshTokenModel).where(
-        RefreshTokenModel.user_id == auth_user.id
-    )
+    stmt = delete(RefreshTokenModel).where(RefreshTokenModel.user_id == auth_user.id)
 
     try:
         await db.execute(stmt)

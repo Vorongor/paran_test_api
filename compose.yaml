@@ -42,6 +42,11 @@ services:
         condition: service_healthy
       migrator:
         condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/docs\")'"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     develop:
       watch:
         - path: ./auth_service/pyproject.toml
@@ -66,6 +71,11 @@ services:
       - S3_BUCKET_NAME=user-pdfs
     depends_on:
       - localstack
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8001/docs\")'"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     develop:
       watch:
         - path: ./pdf_service/pyproject.toml
@@ -79,6 +89,7 @@ services:
   pdf_saver:
     build:
       context: ./pdf_service
+      dockerfile: Dockerfile
     container_name: pdf_saver
     env_file: .env
     environment:
@@ -102,6 +113,26 @@ services:
     command: [ "uv", "run", "alembic", "upgrade", "head" ]
     restart: "no"
 
+  e2e_tester:
+    image: python:3.11-slim
+    volumes:
+      - ./tests:/app/tests
+    working_dir: /app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+      - AUTH_URL=http://auth_api:8000
+      - PDF_URL=http://pdf_api:8001
+    depends_on:
+      auth_api:
+        condition: service_started
+      pdf_service:
+        condition: service_started
+    command: >
+      sh -c "pip install pytest httpx &&
+             pytest tests/e2e"
+    profiles:
+      - e2e_test
 
 volumes:
   postgres_data:

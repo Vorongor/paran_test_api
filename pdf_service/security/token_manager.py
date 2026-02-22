@@ -2,10 +2,7 @@ from typing import cast, Any
 
 from jose import jwt, JWTError, ExpiredSignatureError
 
-from pdf_service.security.exceptions import (
-    TokenExpiredError,
-    InvalidTokenError
-)
+from pdf_service.security.exceptions import TokenExpiredError, InvalidTokenError
 from pdf_service.security.interfaces import JWTAuthManagerInterface
 
 
@@ -15,10 +12,7 @@ class JWTAuthManager(JWTAuthManagerInterface):
     and refresh tokens.
     """
 
-    def __init__(
-            self, secret_key_access: str, secret_key_refresh: str,
-            algorithm: str
-    ):
+    def __init__(self, secret_key_access: str, secret_key_refresh: str, algorithm: str):
         """
         Initialize the manager with secret keys and algorithm for token
         operations.

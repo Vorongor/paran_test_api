@@ -1,14 +1,7 @@
 from typing import Annotated
 
 import httpx
-from fastapi import (
-    APIRouter,
-    Depends,
-    status,
-    HTTPException,
-    Response,
-    Request
-)
+from fastapi import APIRouter, Depends, status, HTTPException, Response, Request
 from fastapi.responses import JSONResponse
 
 from auth_service.config import Settings, get_settings
@@ -33,9 +26,9 @@ profile_router = APIRouter(tags=["Profile"])
     },
 )
 async def get_profile(
-        request: Request,
-        user: Annotated[UserReadSchema, Depends(get_current_user)],
-        settings: Annotated[Settings, Depends(get_settings)]
+    request: Request,
+    user: Annotated[UserReadSchema, Depends(get_current_user)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> Response:
     """
     Endpoint to retrieve the current user's profile in PDF format.
@@ -49,25 +42,22 @@ async def get_profile(
             request=request,
             user=user,
             url=settings.PDF_SERVICE_URL,
-
         )
         return Response(
             content=response.content,
             media_type="application/pdf",
             headers={
-                "Content-Disposition":
-                    f'attachment; filename="profile_{user.id}.pdf"'
+                "Content-Disposition": f'attachment; filename="profile_{user.id}.pdf"'
             },
         )
     except UserBaseException as err:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail=str(err)
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(err))
     except httpx.RequestError:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="PDF service is currently unavailable"
+            detail="PDF service is currently unavailable",
         )
+
 
 @profile_router.get(
     "/me/profile-in-storage",
@@ -82,9 +72,9 @@ async def get_profile(
     },
 )
 async def get_profile_in_storage(
-        request: Request,
-        user: Annotated[UserReadSchema, Depends(get_current_user)],
-        settings: Annotated[Settings, Depends(get_settings)]
+    request: Request,
+    user: Annotated[UserReadSchema, Depends(get_current_user)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> Response:
     """
     Endpoint to generate the current user's profile in PDF format and save it
@@ -99,16 +89,10 @@ async def get_profile_in_storage(
             request=request,
             user=user,
             url=settings.PDF_SERVICE_URL_IN_STORAGE,
-
         )
-        return JSONResponse(
-        content=response.json(),
-        status_code=response.status_code
-    )
+        return JSONResponse(content=response.json(), status_code=response.status_code)
     except UserBaseException as err:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail=str(err)
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(err))
     except httpx.RequestError as err:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

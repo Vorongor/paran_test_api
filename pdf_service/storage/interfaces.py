@@ -4,9 +4,7 @@ from abc import ABC, abstractmethod
 class S3StorageInterface(ABC):
 
     @abstractmethod
-    async def upload_file(
-            self, file_name: str, file_data: bytes | bytearray
-    ) -> None:
+    async def upload_file(self, file_name: str, file_data: bytes | bytearray) -> None:
         """
         Uploads a file to the storage.
 
@@ -25,7 +23,6 @@ class S3StorageInterface(ABC):
         :return: The full URL to access the file.
         """
         pass
-
 
 
 class SQSStorageInterface(ABC):

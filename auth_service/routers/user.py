@@ -55,9 +55,7 @@ async def register(
             user_data=user_data,
         )
     except UserBaseException as err:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
 
 
 @user_router.post(
@@ -118,9 +116,7 @@ async def logout(
     try:
         return await logout_user(db=db, auth_user=auth_user)
     except UserBaseException as err:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
 
 
 @user_router.post(
@@ -148,6 +144,4 @@ async def refresh(
             token=token_data, db=db, jwt_manager=jwt_manager, settings=settings
         )
     except UserBaseException as err:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail=str(err)
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(err))

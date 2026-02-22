@@ -6,7 +6,6 @@ import aioboto3
 from pdf_service.config.logging_config import setup_logging
 from pdf_service.storage.interfaces import S3StorageInterface
 
-
 setup_logging()
 logger = logging.getLogger(__name__)
 
@@ -14,12 +13,12 @@ logger = logging.getLogger(__name__)
 class S3StorageClient(S3StorageInterface):
 
     def __init__(
-            self,
-            endpoint_url: str,
-            access_key: str,
-            secret_key: str,
-            bucket_name: str,
-            region_name: str
+        self,
+        endpoint_url: str,
+        access_key: str,
+        secret_key: str,
+        bucket_name: str,
+        region_name: str,
     ):
         self._endpoint_url = endpoint_url
         self._access_key = access_key
@@ -36,20 +35,21 @@ class S3StorageClient(S3StorageInterface):
         return self._session
 
     async def upload_file(
-            self, file_name: str, file_data: Union[bytes, bytearray]
+        self, file_name: str, file_data: Union[bytes, bytearray]
     ) -> None:
         try:
             async with self._session.client(
-                    "s3", endpoint_url=self._endpoint_url
+                "s3", endpoint_url=self._endpoint_url
             ) as client:
                 await client.put_object(
                     Bucket=self._bucket_name,
                     Key=file_name,
                     Body=file_data,
-                    ContentType="application/pdf"
+                    ContentType="application/pdf",
                 )
-                logger.info(f"File {file_name} uploaded to "
-                            f"S3 bucket {self._bucket_name}")
+                logger.info(
+                    f"File {file_name} uploaded to " f"S3 bucket {self._bucket_name}"
+                )
         except Exception as e:
             logger.error(f"S3 Upload Error: {e}")
             raise

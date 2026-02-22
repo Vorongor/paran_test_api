@@ -101,14 +101,10 @@ class RefreshTokenModel(Base):
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
 
-    user: Mapped[UserModel] = relationship(
-        "UserModel", back_populates="refresh_tokens"
-    )
+    user: Mapped[UserModel] = relationship("UserModel", back_populates="refresh_tokens")
 
     @classmethod
-    def create(
-        cls, user_id: int | Mapped[int], token: str
-    ) -> "RefreshTokenModel":
+    def create(cls, user_id: int | Mapped[int], token: str) -> "RefreshTokenModel":
         """
         Factory method to create a new RefreshTokenModel instance.
         """
