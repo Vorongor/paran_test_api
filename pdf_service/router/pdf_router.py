@@ -59,7 +59,6 @@ async def get_profile_pdf(
         file_name: str,
         settings: Annotated[PDFSettings, Depends(get_settings)],
         s3_manager: Annotated[S3StorageClient, Depends(get_s3_manager)],
-        auth_user: Annotated[None, Depends(get_current_user)]  # noqa
 ):
     try:
         return await retrieve_profile_pdf(

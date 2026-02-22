@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     PDF_SERVICE_URL: str = Field(
         "http://pdf_service:8001/pdf/generate", alias="PDF_SERVICE_URL"
     )
+    PDF_SERVICE_URL_IN_STORAGE: str = Field(
+        "http://127.0.0.1:8001/pdf/generate-in-storage",
+        alias="PDF_SERVICE_URL_IN_STORAGE"
+    )
 
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
