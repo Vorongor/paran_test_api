@@ -4,7 +4,7 @@ from io import BytesIO
 from pdf_service.schemas import UserReadSchema
 
 
-def generate_user_pdf(user: UserReadSchema) -> BytesIO:
+def generate_user_pdf(user: UserReadSchema) -> bytes | bytearray| BytesIO:
     pdf = FPDF()
     pdf.add_page()
 

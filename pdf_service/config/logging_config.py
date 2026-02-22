@@ -7,7 +7,7 @@ def setup_logging():
     )
 
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format=logging_format,
         handlers=[
             logging.StreamHandler(sys.stdout)

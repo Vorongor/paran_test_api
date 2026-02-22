@@ -31,6 +31,10 @@ class S3StorageClient(S3StorageInterface):
             aws_secret_access_key=self._secret_key,
         )
 
+    @property
+    def session(self):
+        return self._session
+
     async def upload_file(
             self, file_name: str, file_data: Union[bytes, bytearray]
     ) -> None:
