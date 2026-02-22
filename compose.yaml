@@ -27,7 +27,7 @@ services:
       - DEFAULT_REGION=us-east-1
       - DEBUG=1
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - ./pdf_service/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
 
   auth_api:
     build:
@@ -75,6 +75,17 @@ services:
         - path: ./pdf_service
           target: /app/pdf_service
           action: sync
+
+  pdf_saver:
+    build:
+      context: ./pdf_service
+    container_name: pdf_saver
+    env_file: .env
+    environment:
+      - AWS_ENDPOINT_URL=http://localstack:4566
+    depends_on:
+      - localstack
+    command: python -m worker
 
   migrator:
     build:

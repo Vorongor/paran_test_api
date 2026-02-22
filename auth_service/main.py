@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(
         app: FastAPI  # noqa
 ):
-    logger.info("Service is starting up...")
+    logger.info("AUTH Service is starting up...")
     yield
 
 

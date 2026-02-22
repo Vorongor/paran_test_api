@@ -12,6 +12,7 @@ COPY pyproject.toml ./
 
 RUN uv pip install --system --no-cache -r pyproject.toml
 
+COPY worker.py .
 COPY . ./pdf_service/
 
 EXPOSE 8001
