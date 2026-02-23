@@ -95,10 +95,8 @@ dedicated PDF generation service, adhering to a clean, layered architecture.
 # Core Dependencies
 
 The project utilizes FastAPI's Depends for clean Dependency Injection:
-- **get_settings**: Returns the current configuration (
-  1. LocalSettings - if project run locally, db - sqlite3
-  2. Setting - if project run through docker-compose, db - postgresql
-  3. TestingSettings - if project run in testings mode, db - sqlite3:inmemory
+Auth Service
+- **get_settings**: Returns the current configuration 
 - **get_db**: Provides an asynchronous bd session - based on env and settings.
 - **get_jwt_manager**: Returns the JWT handler based on an interface.
 - **get_current_user**: Secures endpoints by validating the bearer token.
