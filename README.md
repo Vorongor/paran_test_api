@@ -15,8 +15,40 @@ dedicated PDF generation service, adhering to a clean, layered architecture.
 - Deployment: Docker & Docker Compose
 - pdf2: Create user profile file
 
-# Project structure
+## 🏗 Architecture & Service Interaction
 
+The system follows a microservices-like architecture with asynchronous task processing:
+
+
+
+1.  **Auth Service**: Handles user registration, login, and JWT issuance.
+2.  **PDF Service (API)**: Receives PDF generation requests, validates users via JWT, and:
+    * Generates PDFs on the fly for immediate download.
+    * **Or** pushes a job to **Amazon SQS** for background processing.
+3.  **LocalStack**: Emulates AWS SQS and S3 in the local environment.
+4.  **PDF Saver (Worker)**: An independent process that:
+    * Polls the SQS queue for new jobs.
+    * Generates the PDF file.
+    * Uploads the final document to **Amazon S3**.
+5. **Connection**: services connects realized via HTTP requests
+
+
+## 🔌 API Endpoints
+
+### Auth Service (Port 8000)
+- `POST /api/v1/users` — Register a new user.
+- `POST /api/v1/sessions` — Login and get JWT tokens.
+- `POST /api/v1/refresh` — Refresh user access token.
+- `POST /api/v1/logout` — Logout and destroy current session.
+- `GET /api/v1/me/profile` — Get authenticated user data - download pdf.
+- `GET /api/v1/me/profile-in-storage` — Get authenticated user data - retrieve link pdf in s3 storage.
+
+### PDF Service (Port 8001)
+- `POST /pdf/generate` — Direct PDF generation (returns file).
+- `POST /pdf/generate-in-storage` — Asynchronous generation and uploads to S3 (returns link).
+- `GET /pdf/{file_name}` — Proxi endpoint to represent pdf in storage
+
+# Project structure
 ```
 /
 ├── auth_service/                # Auth App Dir
@@ -100,6 +132,12 @@ Auth Service
 - **get_db**: Provides an asynchronous bd session - based on env and settings.
 - **get_jwt_manager**: Returns the JWT handler based on an interface.
 - **get_current_user**: Secures endpoints by validating the bearer token.
+- PDF Service
+- **get_settings**: Returns the current configuration 
+- **get_s3_manager**: Returns S3 storage manager
+- **get_sqs_manager**: Returns SQS queue manager
+- **get_jwt_manager**: Returns the JWT handler based on an interface.
+- **get_current_user**: Secures endpoints by validating the bearer token.
 
 
 # Run project
@@ -122,7 +160,7 @@ environment via a Docker override.
 
 **Don't forget build before testing**
 
-
+### Integration tests
 ```Bash
   # Run infrastructure
   docker compose up -d project_db localstack
@@ -132,6 +170,9 @@ environment via a Docker override.
 
   # Run PDF test
   docker compose run --rm pdf_tester
+```
+### E2E test
+```Bash
   # Run end-to-end test inside the docker environment
   docker compose --profile e2e_test up --build --attach e2e_tester
 ```
